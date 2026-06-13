@@ -3,20 +3,21 @@ using UnityEngine.UI;
 using TMPro;
 
 /// <summary>
-/// Minimal settings: two music volume sliders (lobby + game). Values are read
-/// from / written to PlayerPrefs and applied live to the MusicManager.
+/// Minimal settings: two music volume sliders (lobby + bossfight). Values are
+/// read from / written to PlayerPrefs and applied live to the MusicManager.
+/// (gameVolumeSlider/gameValueLabel control the BOSSFIGHT music volume.)
 /// </summary>
 public class SettingsPanelUI : MonoBehaviour
 {
     public Slider lobbyVolumeSlider;
-    public Slider gameVolumeSlider;
+    public Slider gameVolumeSlider;     // bossfight music volume
     public TMP_Text lobbyValueLabel;
-    public TMP_Text gameValueLabel;
+    public TMP_Text gameValueLabel;     // bossfight music value
 
     void OnEnable()
     {
         float lobby = PlayerPrefs.GetFloat(MusicManager.LobbyVolKey, MusicManager.DefaultVolume);
-        float game  = PlayerPrefs.GetFloat(MusicManager.GameVolKey, MusicManager.DefaultVolume);
+        float game  = PlayerPrefs.GetFloat(MusicManager.BossVolKey, MusicManager.DefaultVolume);
 
         if (lobbyVolumeSlider != null)
         {
@@ -48,8 +49,8 @@ public class SettingsPanelUI : MonoBehaviour
 
     void OnGameChanged(float v)
     {
-        if (MusicManager.Instance != null) MusicManager.Instance.SetGameVolume(v);
-        else PlayerPrefs.SetFloat(MusicManager.GameVolKey, v);
+        if (MusicManager.Instance != null) MusicManager.Instance.SetBossVolume(v);
+        else PlayerPrefs.SetFloat(MusicManager.BossVolKey, v);
         UpdateLabels(lobbyVolumeSlider != null ? lobbyVolumeSlider.value : 0f, v);
     }
 

@@ -1,10 +1,16 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 /// <summary>
-/// Persistent music player. Survives scene loads, picks the lobby track for
-/// menu/win/lose scenes and the game track for the gameplay scene, and applies
-/// the two separate volume settings stored in PlayerPrefs.
+/// Persistent music player. Survives scene loads.
+///
+/// Lobby music is the DEFAULT track and plays everywhere (menu, gameplay,
+/// win, lose). The boss track only plays during a boss fight: call
+/// EnterBossFight() to switch to it and ExitBossFight() to return to lobby.
+/// Loading any scene resets back to lobby music.
+///
+/// Two independent volumes (lobby + boss) are saved in PlayerPrefs.
 /// Assign your audio clips in the Inspector.
 /// </summary>
 [RequireComponent(typeof(AudioSource))]
@@ -13,18 +19,21 @@ public class MusicManager : MonoBehaviour
     public static MusicManager Instance { get; private set; }
 
     public const string LobbyVolKey = "umwami_lobbyVolume";
-    public const string GameVolKey  = "umwami_gameVolume";
+    public const string BossVolKey  = "umwami_bossVolume";
     public const float DefaultVolume = 0.7f;
 
     [Header("Tracks (assign your audio clips)")]
-    public AudioClip lobbyMusic;
-    public AudioClip gameMusic;
+    public AudioClip lobbyMusic;   // default track, plays everywhere
+    public AudioClip bossMusic;    // plays only during a boss fight
 
-    [Header("Which scene counts as gameplay")]
-    public string gameplaySceneName = GameFlow.Gameplay;
+    [Header("Crossfade")]
+    public float fadeDuration = 0.6f;
 
     AudioSource source;
-    bool playingGameTrack;
+    bool inBossFight;
+    Coroutine fadeRoutine;
+
+    public bool InBossFight => inBossFight;
 
     void Awake()
     {
@@ -41,7 +50,7 @@ public class MusicManager : MonoBehaviour
         source.playOnAwake = false;
 
         SceneManager.sceneLoaded += OnSceneLoaded;
-        ApplyForScene(SceneManager.GetActiveScene().name);
+        PlayLobby(instant: true);
     }
 
     void OnDestroy()
@@ -50,29 +59,99 @@ public class MusicManager : MonoBehaviour
             SceneManager.sceneLoaded -= OnSceneLoaded;
     }
 
-    void OnSceneLoaded(Scene scene, LoadSceneMode mode) => ApplyForScene(scene.name);
-
-    void ApplyForScene(string sceneName)
+    // A new scene always starts on lobby music (no fight in progress yet).
+    void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        bool useGame = sceneName == gameplaySceneName;
-        AudioClip target = useGame ? gameMusic : lobbyMusic;
-        playingGameTrack = useGame;
+        inBossFight = false;
+        PlayLobby(instant: true);
+    }
 
-        if (target != null && source.clip != target)
+    // ---- public API: call these from your boss logic ----
+
+    public void EnterBossFight()
+    {
+        if (inBossFight) return;
+        inBossFight = true;
+        SwitchTo(bossMusic);
+    }
+
+    public void ExitBossFight()
+    {
+        if (!inBossFight) return;
+        inBossFight = false;
+        SwitchTo(lobbyMusic);
+    }
+
+    void PlayLobby(bool instant)
+    {
+        if (instant)
+        {
+            if (lobbyMusic != null && source.clip != lobbyMusic)
+            {
+                source.clip = lobbyMusic;
+                source.Play();
+            }
+            RefreshVolume();
+        }
+        else
+        {
+            SwitchTo(lobbyMusic);
+        }
+    }
+
+    void SwitchTo(AudioClip target)
+    {
+        if (target == null || source.clip == target)
+        {
+            RefreshVolume();
+            return;
+        }
+
+        if (fadeRoutine != null) StopCoroutine(fadeRoutine);
+        if (gameObject.activeInHierarchy)
+            fadeRoutine = StartCoroutine(Crossfade(target));
+        else
         {
             source.clip = target;
             source.Play();
+            RefreshVolume();
         }
-        else if (target == null)
-        {
-            source.Stop();
-        }
-
-        RefreshVolume();
     }
 
+    IEnumerator Crossfade(AudioClip target)
+    {
+        float full = TargetVolume();
+        float t = 0f;
+
+        // fade out current
+        while (t < fadeDuration && source.isPlaying)
+        {
+            t += Time.unscaledDeltaTime;
+            source.volume = Mathf.Lerp(full, 0f, t / fadeDuration);
+            yield return null;
+        }
+
+        source.clip = target;
+        source.Play();
+
+        // fade in new
+        t = 0f;
+        full = TargetVolume();
+        while (t < fadeDuration)
+        {
+            t += Time.unscaledDeltaTime;
+            source.volume = Mathf.Lerp(0f, full, t / fadeDuration);
+            yield return null;
+        }
+
+        source.volume = full;
+        fadeRoutine = null;
+    }
+
+    // ---- volume ----
+
     public float LobbyVolume => PlayerPrefs.GetFloat(LobbyVolKey, DefaultVolume);
-    public float GameVolume  => PlayerPrefs.GetFloat(GameVolKey, DefaultVolume);
+    public float BossVolume  => PlayerPrefs.GetFloat(BossVolKey, DefaultVolume);
 
     public void SetLobbyVolume(float v)
     {
@@ -80,15 +159,18 @@ public class MusicManager : MonoBehaviour
         RefreshVolume();
     }
 
-    public void SetGameVolume(float v)
+    public void SetBossVolume(float v)
     {
-        PlayerPrefs.SetFloat(GameVolKey, Mathf.Clamp01(v));
+        PlayerPrefs.SetFloat(BossVolKey, Mathf.Clamp01(v));
         RefreshVolume();
     }
 
+    float TargetVolume() => inBossFight ? BossVolume : LobbyVolume;
+
     public void RefreshVolume()
     {
-        if (source != null)
-            source.volume = playingGameTrack ? GameVolume : LobbyVolume;
+        // Don't fight an in-progress crossfade.
+        if (fadeRoutine == null && source != null)
+            source.volume = TargetVolume();
     }
 }

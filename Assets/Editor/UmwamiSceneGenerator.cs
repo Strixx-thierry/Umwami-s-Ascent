@@ -333,7 +333,7 @@ public static class UmwamiSceneGenerator
         var lobbyVal = CreateText(panelGO.transform, "LobbyValue", "70%", 36, TextAlignmentOptions.Left,
             Mid, Mid, Mid, new Vector2(390, 80), new Vector2(140, 70), Color.white);
 
-        CreateText(panelGO.transform, "GameLabel", "Game Music", 40, TextAlignmentOptions.Right,
+        CreateText(panelGO.transform, "GameLabel", "Bossfight Music", 40, TextAlignmentOptions.Right,
             Mid, Mid, Mid, new Vector2(-330, -30), new Vector2(360, 70), Color.white);
         var gameSlider = CreateSlider(panelGO.transform, new Vector2(120, -30), new Vector2(360, 30));
         var gameVal = CreateText(panelGO.transform, "GameValue", "70%", 36, TextAlignmentOptions.Left,
