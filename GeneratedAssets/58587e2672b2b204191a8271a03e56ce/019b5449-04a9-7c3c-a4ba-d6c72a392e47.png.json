@@ -1,0 +1,20 @@
+{
+    "asset": "58587e2672b2b204191a8271a03e56ce",
+    "fileName": "019b5449-04a9-7c3c-a4ba-d6c72a392e47.png",
+    "prompt": "generate a high definition idle frames of my character",
+    "negativePrompt": "",
+    "model": "5b5b2af1-6ea4-4266-b087-cc9f3bf4f450",
+    "modelName": "Flux.1 Dev",
+    "customSeed": -1,
+    "w3CTraceId": "48d6990506fbe5a23de7a6d68b25843d",
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": []
+    },
+    "upscaleFactor": 0
+}
