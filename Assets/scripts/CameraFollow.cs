@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class CameraFollow : MonoBehaviour
 {
@@ -16,10 +17,11 @@ public class CameraFollow : MonoBehaviour
     {
         if (player == null) return;
 
-        // Manual pan
-        if (Input.GetKey(KeyCode.UpArrow))
+        // Manual pan (Up / Down arrows)
+        var kb = Keyboard.current;
+        if (kb != null && kb.upArrowKey.isPressed)
             targetPanY = panAmount;
-        else if (Input.GetKey(KeyCode.DownArrow))
+        else if (kb != null && kb.downArrowKey.isPressed)
             targetPanY = -panAmount;
         else
             targetPanY = 0f;
@@ -47,4 +49,3 @@ public class CameraFollow : MonoBehaviour
         transform.position = pos;
     }
 }
-    

@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class Dash : MonoBehaviour
 {
@@ -16,10 +17,22 @@ public class Dash : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.LeftShift) && canDash)
+        var kb = Keyboard.current;
+        if (kb != null && kb.leftShiftKey.wasPressedThisFrame && canDash)
         {
             StartCoroutine(DoDash());
         }
+    }
+
+    float ReadHorizontal()
+    {
+        var kb = Keyboard.current;
+        if (kb == null) return 0f;
+
+        float move = 0f;
+        if (kb.aKey.isPressed || kb.leftArrowKey.isPressed) move -= 1f;
+        if (kb.dKey.isPressed || kb.rightArrowKey.isPressed) move += 1f;
+        return move;
     }
 
     System.Collections.IEnumerator DoDash()
@@ -27,7 +40,7 @@ public class Dash : MonoBehaviour
         canDash = false;
         isDashing = true;
 
-        float dir = Mathf.Sign(Input.GetAxisRaw("Horizontal"));
+        float dir = Mathf.Sign(ReadHorizontal());
         if (dir == 0) dir = transform.localScale.x;
 
         rb.gravityScale = 0;

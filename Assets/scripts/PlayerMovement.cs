@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class PlayerMovement : MonoBehaviour
 {
@@ -20,15 +21,27 @@ public class PlayerMovement : MonoBehaviour
         rb.freezeRotation = true;
     }
 
+    // Reads A/D + Left/Right arrows as a -1..1 axis via the new Input System.
+    float ReadHorizontal()
+    {
+        var kb = Keyboard.current;
+        if (kb == null) return 0f;
+
+        float move = 0f;
+        if (kb.aKey.isPressed || kb.leftArrowKey.isPressed) move -= 1f;
+        if (kb.dKey.isPressed || kb.rightArrowKey.isPressed) move += 1f;
+        return move;
+    }
+
     void FixedUpdate()
     {
-        float move = Input.GetAxisRaw("Horizontal");
+        float move = ReadHorizontal();
         rb.linearVelocity = new Vector2(move * speed, rb.linearVelocity.y);
     }
 
     void Update()
     {
-        float move = Input.GetAxisRaw("Horizontal");
+        float move = ReadHorizontal();
 
         // Animation
         anim.SetBool("isRunning", Mathf.Abs(move) > 0.1f);
@@ -40,7 +53,8 @@ public class PlayerMovement : MonoBehaviour
             transform.localScale = new Vector3(-originalXScale, transform.localScale.y, transform.localScale.z);
 
         // Jump
-        if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
+        var kb = Keyboard.current;
+        if (kb != null && kb.spaceKey.wasPressedThisFrame && isGrounded)
             rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
     }
 

@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class SpearAttack : MonoBehaviour
 {
@@ -14,7 +15,8 @@ public class SpearAttack : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.S))
+        var kb = Keyboard.current;
+        if (kb != null && kb.sKey.wasPressedThisFrame)
         {
             TryPogo();
         }
