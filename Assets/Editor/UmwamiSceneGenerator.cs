@@ -251,6 +251,9 @@ public static class UmwamiSceneGenerator
         img.color = new Color(0.13f, 0.13f, 0.16f, 0.94f);
 
         var btn = go.GetComponent<Button>();
+        var nav = btn.navigation;
+        nav.mode = Navigation.Mode.None;   // mouse-click only; avoids keyboard Submit firing the wrong button
+        btn.navigation = nav;
         var colors = btn.colors;
         colors.normalColor      = Color.white;
         colors.highlightedColor = new Color(1f, 0.84f, 0.4f, 1f);
