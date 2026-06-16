@@ -165,7 +165,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dde88a1a113886c418140f1baf048d9f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DangerZone
-  damage: 5
+  damagePerSecond: 40
   playerTag: Player
 --- !u!61 &127438725
 BoxCollider2D:
@@ -314,6 +314,8 @@ GameObject:
   m_Component:
   - component: {fileID: 416622563}
   - component: {fileID: 416622562}
+  - component: {fileID: 416622565}
+  - component: {fileID: 416622564}
   m_Layer: 0
   m_Name: win zone
   m_TagString: Untagged
@@ -395,6 +397,65 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &416622564
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 416622561}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8b5a6b0d90c365a488231d549431e601, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WinZone
+  playerTag: Player
+--- !u!61 &416622565
+BoxCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 416622561}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 0}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 1, y: 1}
+    newSize: {x: 1, y: 1}
+    adaptiveTilingThreshold: 0.5
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Size: {x: 1, y: 1}
+  m_EdgeRadius: 0
 --- !u!1 &446132345
 GameObject:
   m_ObjectHideFlags: 0
@@ -485,7 +546,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dde88a1a113886c418140f1baf048d9f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DangerZone
-  damage: 5
+  damagePerSecond: 40
   playerTag: Player
 --- !u!61 &449740713
 BoxCollider2D:
@@ -53893,7 +53954,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dde88a1a113886c418140f1baf048d9f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DangerZone
-  damage: 5
+  damagePerSecond: 40
   playerTag: Player
 --- !u!61 &1562836307
 BoxCollider2D:
@@ -54010,6 +54071,8 @@ GameObject:
   m_Component:
   - component: {fileID: 1682479320}
   - component: {fileID: 1682479319}
+  - component: {fileID: 1682479322}
+  - component: {fileID: 1682479321}
   m_Layer: 0
   m_Name: boss zone
   m_TagString: Untagged
@@ -54085,12 +54148,72 @@ Transform:
   m_GameObject: {fileID: 1682479318}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 205.2118, y: -103.796, z: 0}
-  m_LocalScale: {x: 47.321907, y: 20.90657, z: 1}
+  m_LocalPosition: {x: 194.4234, y: -103.796, z: 0}
+  m_LocalScale: {x: 68.900696, y: 20.90657, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1682479321
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1682479318}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e3c0c6f581ac4eb44a83e2aec9d66545, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BossFightZone
+  playerTag: Player
+  endOnExit: 0
+--- !u!61 &1682479322
+BoxCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1682479318}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 0}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 1, y: 1}
+    newSize: {x: 1, y: 1}
+    adaptiveTilingThreshold: 0.5
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Size: {x: 1, y: 1}
+  m_EdgeRadius: 0
 --- !u!1 &1687915934
 GameObject:
   m_ObjectHideFlags: 0
@@ -54200,7 +54323,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dde88a1a113886c418140f1baf048d9f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DangerZone
-  damage: 5
+  damagePerSecond: 40
   playerTag: Player
 --- !u!61 &1687915938
 BoxCollider2D:
@@ -54539,8 +54662,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerHealth
   maxHealth: 5
+  regenPerSecond: 12
+  regenDelay: 1.5
   maxChances: 3
-  invincibleTime: 0.8
 --- !u!1 &1828943720
 GameObject:
   m_ObjectHideFlags: 0
@@ -54823,7 +54947,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dde88a1a113886c418140f1baf048d9f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DangerZone
-  damage: 5
+  damagePerSecond: 40
   playerTag: Player
 --- !u!61 &2117178126
 BoxCollider2D:

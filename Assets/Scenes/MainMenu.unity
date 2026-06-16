@@ -2961,8 +2961,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 03be8bdd99f2b684a816bbb64f7401fa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MusicManager
-  lobbyMusic: {fileID: 0}
-  bossMusic: {fileID: 0}
+  lobbyMusic: {fileID: 8300000, guid: 9f81f69209df5f44ebc2ba2f9d496781, type: 3}
+  bossMusic: {fileID: 8300000, guid: aaeec6cb4c58a7046852560da453158f, type: 3}
   fadeDuration: 0.6
 --- !u!82 &1929252177
 AudioSource:

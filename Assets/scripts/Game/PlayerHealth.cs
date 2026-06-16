@@ -2,25 +2,31 @@ using System;
 using UnityEngine;
 
 /// <summary>
-/// Player hit points + a "chances" (lives) system.
-/// Taking damage drains the current health bar. When it empties you lose one
-/// chance and the bar refills. When all chances are used up the Lose scene
-/// loads. UI (HealthBarUI) subscribes to the two events below.
+/// Player health (0..maxHealth, shown as a percentage) plus a "chances" system.
+/// Health drains while in a danger zone and slowly REGENERATES when the player
+/// has been out of danger for regenDelay seconds. When health hits 0 the player
+/// loses a chance and health refills; out of chances -> Lose scene.
 /// </summary>
 public class PlayerHealth : MonoBehaviour
 {
-    public int maxHealth = 5;
-    public int maxChances = 3;
-    public float invincibleTime = 0.8f;
+    [Header("Health")]
+    public float maxHealth = 100f;
+    public float regenPerSecond = 12f;
+    [Tooltip("Seconds out of danger before health starts recovering.")]
+    public float regenDelay = 1.5f;
 
-    public int CurrentHealth { get; private set; }
+    [Header("Chances")]
+    public int maxChances = 3;
+
+    public float CurrentHealth { get; private set; }
     public int CurrentChances { get; private set; }
 
-    public event Action<int, int> OnHealthChanged; // (current, max)
-    public event Action<int> OnChancesChanged;      // (remaining)
+    public event Action<float, float> OnHealthChanged; // (current, max)
+    public event Action<int> OnChancesChanged;          // (remaining)
 
     SpriteRenderer sr;
-    float invulnUntil;
+    float lastDamageTime = -999f;
+    float nextFlashTime;
     bool gameOver;
 
     void Awake()
@@ -36,22 +42,37 @@ public class PlayerHealth : MonoBehaviour
         OnChancesChanged?.Invoke(CurrentChances);
     }
 
-    public void TakeDamage(int amount)
+    void Update()
     {
-        if (gameOver || Time.time < invulnUntil) return;
+        if (gameOver || CurrentHealth >= maxHealth) return;
 
-        CurrentHealth = Mathf.Max(0, CurrentHealth - Mathf.Abs(amount));
-        invulnUntil = Time.time + invincibleTime;
+        // Recover slowly once we've been out of danger long enough.
+        if (Time.time >= lastDamageTime + regenDelay)
+        {
+            CurrentHealth = Mathf.Min(maxHealth, CurrentHealth + regenPerSecond * Time.deltaTime);
+            OnHealthChanged?.Invoke(CurrentHealth, maxHealth);
+        }
+    }
+
+    public void TakeDamage(float amount)
+    {
+        if (gameOver) return;
+
+        CurrentHealth = Mathf.Max(0f, CurrentHealth - Mathf.Abs(amount));
+        lastDamageTime = Time.time;
         OnHealthChanged?.Invoke(CurrentHealth, maxHealth);
-        Debug.Log($"Hurt! HP = {CurrentHealth}/{maxHealth}, chances = {CurrentChances}");
 
-        if (sr != null) StartCoroutine(Flash());
+        if (sr != null && Time.time >= nextFlashTime)
+        {
+            nextFlashTime = Time.time + 0.15f;
+            StartCoroutine(Flash());
+        }
 
-        if (CurrentHealth <= 0)
+        if (CurrentHealth <= 0f)
             LoseChance();
     }
 
-    public void Heal(int amount)
+    public void Heal(float amount)
     {
         if (gameOver) return;
         CurrentHealth = Mathf.Min(maxHealth, CurrentHealth + Mathf.Abs(amount));
@@ -65,12 +86,15 @@ public class PlayerHealth : MonoBehaviour
 
         if (CurrentChances <= 0)
         {
-            GameOver();
+            gameOver = true;
+            Debug.Log("Out of chances -> loading Lose scene");
+            if (GameManager.Instance != null) GameManager.Instance.Lose();
+            else GameFlow.LoadLose();
         }
         else
         {
-            // Refill the bar for the next chance.
-            CurrentHealth = maxHealth;
+            CurrentHealth = maxHealth; // refill for the next chance
+            lastDamageTime = Time.time;
             OnHealthChanged?.Invoke(CurrentHealth, maxHealth);
             Debug.Log($"Lost a chance. {CurrentChances} left.");
         }
@@ -80,24 +104,10 @@ public class PlayerHealth : MonoBehaviour
     {
         Color original = sr.color;
         sr.color = new Color(1f, 0.4f, 0.4f, 1f);
-        yield return new WaitForSeconds(0.12f);
+        yield return new WaitForSeconds(0.1f);
         sr.color = original;
     }
 
-    void GameOver()
-    {
-        gameOver = true;
-        Debug.Log("Out of chances -> loading Lose scene");
-        if (GameManager.Instance != null) GameManager.Instance.Lose();
-        else GameFlow.LoadLose();
-    }
-
-    // Verify in Play mode with no other systems:
-    // right-click the PlayerHealth header -> "TEST: Take 1 Damage".
-    [ContextMenu("TEST: Take 1 Damage")]
-    void TestDamage()
-    {
-        invulnUntil = 0f;
-        TakeDamage(1);
-    }
+    [ContextMenu("TEST: Take 25 Damage")]
+    void TestDamage() => TakeDamage(25f);
 }
