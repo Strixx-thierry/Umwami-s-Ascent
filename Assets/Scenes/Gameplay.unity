@@ -59577,7 +59577,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerAttack
   damage: 1
-  range: 2.5
+  range: 5
   cooldown: 0.4
   originOffset: 0.6
   slashColor: {r: 1, g: 0.9, b: 0.5, a: 1}

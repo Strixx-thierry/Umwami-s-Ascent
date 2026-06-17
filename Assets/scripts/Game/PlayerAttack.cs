@@ -61,30 +61,44 @@ public class PlayerAttack : MonoBehaviour
         if (dir == 0) dir = 1f;
         Vector2 direction = new Vector2(dir, 0f);
         Vector2 origin = (Vector2)transform.position + direction * originOffset;
-
-        RaycastHit2D hit = Physics2D.Raycast(origin, direction, range);
         Vector2 end = origin + direction * range;
 
         Debug.Log($"[Attack] fired, facing {(dir > 0 ? "right" : "left")}");
 
-        if (hit.collider != null)
+        // Scan EVERY collider along the ray (triggers included) and pick the
+        // closest one that actually has an EnemyHealth. This skips trigger
+        // volumes we're standing in (boss zone, danger zone) and the ground,
+        // which would otherwise block a single Raycast before reaching the boss.
+        ContactFilter2D filter = new ContactFilter2D();
+        filter.useTriggers = true;
+        filter.useLayerMask = false;
+        RaycastHit2D[] results = new RaycastHit2D[16];
+        int count = Physics2D.Raycast(origin, direction, filter, results, range);
+
+        EnemyHealth target = null;
+        float bestDistance = float.MaxValue;
+        for (int i = 0; i < count; i++)
         {
-            end = hit.point;
-            var enemy = hit.collider.GetComponent<EnemyHealth>();
-            if (enemy == null) enemy = hit.collider.GetComponentInParent<EnemyHealth>();
-            if (enemy != null)
+            var col = results[i].collider;
+            if (col == null) continue;
+            var enemy = col.GetComponent<EnemyHealth>();
+            if (enemy == null) enemy = col.GetComponentInParent<EnemyHealth>();
+            if (enemy != null && results[i].distance < bestDistance)
             {
-                enemy.TakeDamage(damage);
-                Debug.Log($"[Attack] HIT {enemy.name} for {damage}");
+                bestDistance = results[i].distance;
+                target = enemy;
+                end = results[i].point;
             }
-            else
-            {
-                Debug.Log($"[Attack] ray hit '{hit.collider.name}' but it has no EnemyHealth");
-            }
+        }
+
+        if (target != null)
+        {
+            target.TakeDamage(damage);
+            Debug.Log($"[Attack] HIT {target.name} for {damage}");
         }
         else
         {
-            Debug.Log("[Attack] ray hit nothing (boss out of range or facing away)");
+            Debug.Log("[Attack] no enemy in range (facing away or too far)");
         }
 
         StartCoroutine(ShowSlash(origin, end));
