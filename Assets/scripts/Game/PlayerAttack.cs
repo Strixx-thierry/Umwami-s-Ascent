@@ -65,12 +65,26 @@ public class PlayerAttack : MonoBehaviour
         RaycastHit2D hit = Physics2D.Raycast(origin, direction, range);
         Vector2 end = origin + direction * range;
 
+        Debug.Log($"[Attack] fired, facing {(dir > 0 ? "right" : "left")}");
+
         if (hit.collider != null)
         {
             end = hit.point;
             var enemy = hit.collider.GetComponent<EnemyHealth>();
             if (enemy == null) enemy = hit.collider.GetComponentInParent<EnemyHealth>();
-            if (enemy != null) enemy.TakeDamage(damage);
+            if (enemy != null)
+            {
+                enemy.TakeDamage(damage);
+                Debug.Log($"[Attack] HIT {enemy.name} for {damage}");
+            }
+            else
+            {
+                Debug.Log($"[Attack] ray hit '{hit.collider.name}' but it has no EnemyHealth");
+            }
+        }
+        else
+        {
+            Debug.Log("[Attack] ray hit nothing (boss out of range or facing away)");
         }
 
         StartCoroutine(ShowSlash(origin, end));
@@ -81,7 +95,7 @@ public class PlayerAttack : MonoBehaviour
         line.SetPosition(0, a);
         line.SetPosition(1, b);
         line.enabled = true;
-        yield return new WaitForSeconds(0.08f);
+        yield return new WaitForSeconds(0.15f);
         line.enabled = false;
     }
 }
