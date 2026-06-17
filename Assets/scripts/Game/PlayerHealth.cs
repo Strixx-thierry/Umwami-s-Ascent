@@ -14,19 +14,22 @@ public class PlayerHealth : MonoBehaviour
     [Tooltip("Seconds out of danger before health starts recovering.")]
     public float regenDelay = 1.5f;
 
-    public float CurrentHealth { get; private set; }
+    public float CurrentHealth { get; private set; }   // read-only to the outside
 
-    // (current, max)
+    // Event raised whenever health changes. The HUD (HealthBarUI) subscribes to
+    // this instead of reading health every frame — so the data and the UI stay
+    // decoupled. Args are (current, max).
     public event Action<float, float> OnHealthChanged;
 
     [Header("Death")]
     [Tooltip("Seconds to let the death animation play before the Lose scene loads.")]
     public float deathDelay = 0.9f;
 
-    SpriteRenderer sr;
-    Animator anim;
-    float lastDamageTime = -999f;
-    float nextFlashTime;
+    // ---- cached references / internal state ----
+    SpriteRenderer sr;          // used for the red damage flash
+    Animator anim;             // optional; plays a "Death" trigger if present
+    float lastDamageTime = -999f;  // when we were last hurt (gates regen)
+    float nextFlashTime;        // throttles the damage flash
     bool dead;
 
     void Awake()
@@ -38,28 +41,33 @@ public class PlayerHealth : MonoBehaviour
 
     void Start()
     {
+        // Push the starting value so the HUD shows 100% immediately.
         OnHealthChanged?.Invoke(CurrentHealth, maxHealth);
     }
 
     void Update()
     {
+        // Nothing to do if dead or already full.
         if (dead || CurrentHealth >= maxHealth) return;
 
+        // Regenerate, but only once enough time has passed since the last hit.
         if (Time.time >= lastDamageTime + regenDelay)
         {
             CurrentHealth = Mathf.Min(maxHealth, CurrentHealth + regenPerSecond * Time.deltaTime);
-            OnHealthChanged?.Invoke(CurrentHealth, maxHealth);
+            OnHealthChanged?.Invoke(CurrentHealth, maxHealth);   // update the HUD
         }
     }
 
+    // Called by danger zones and the boss to remove health.
     public void TakeDamage(float amount)
     {
         if (dead) return;
 
         CurrentHealth = Mathf.Max(0f, CurrentHealth - Mathf.Abs(amount));
-        lastDamageTime = Time.time;
-        OnHealthChanged?.Invoke(CurrentHealth, maxHealth);
+        lastDamageTime = Time.time;                          // pauses regen
+        OnHealthChanged?.Invoke(CurrentHealth, maxHealth);   // update the HUD
 
+        // Brief red flash for feedback (throttled so it can't spam).
         if (sr != null && Time.time >= nextFlashTime)
         {
             nextFlashTime = Time.time + 0.15f;
@@ -70,6 +78,7 @@ public class PlayerHealth : MonoBehaviour
             Die();
     }
 
+    // Restore health (kept for pickups / future use).
     public void Heal(float amount)
     {
         if (dead) return;
@@ -77,6 +86,7 @@ public class PlayerHealth : MonoBehaviour
         OnHealthChanged?.Invoke(CurrentHealth, maxHealth);
     }
 
+    // Tint the sprite red for a moment, then restore the original colour.
     System.Collections.IEnumerator Flash()
     {
         Color original = sr.color;
@@ -85,6 +95,7 @@ public class PlayerHealth : MonoBehaviour
         sr.color = original;
     }
 
+    // Run the death sequence: play the animation (if any) then load Lose.
     void Die()
     {
         dead = true;
@@ -100,6 +111,7 @@ public class PlayerHealth : MonoBehaviour
         return false;
     }
 
+    // Wait for the death animation, then hand off to the Lose scene.
     System.Collections.IEnumerator LoadLoseAfterDeath()
     {
         yield return new WaitForSeconds(anim != null ? deathDelay : 0f);
@@ -107,6 +119,7 @@ public class PlayerHealth : MonoBehaviour
         else GameFlow.LoadLose();
     }
 
+    // Right-click the component in the Inspector to test taking damage.
     [ContextMenu("TEST: Take 25 Damage")]
     void TestDamage() => TakeDamage(25f);
 }

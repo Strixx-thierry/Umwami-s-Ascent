@@ -61,9 +61,9 @@ On touch devices the on-screen controls appear automatically; on desktop they ar
 
 ## Build Information
 
-- **WebGL deployment:** _[add link here]_
-- **Android build (APK):** _[add link here]_
-- **GitHub repository:** _[add link here]_
+- **WebGL deployment:** https://play.unity.com/en/games/aff67c3f-3626-4a73-a472-46c09a0adbcc/umwamis-ascend
+- **Android build (APK):** https://drive.google.com/drive/folders/1_X-A3TR4_d0WQdNVsjJld6wr1qmH2cRB?usp=sharing
+- **GitHub repository:** https://github.com/Strixx-thierry/Umwami-s-Ascent
 - **Demo video:** _[add link here]_
 
 ### Running the project locally

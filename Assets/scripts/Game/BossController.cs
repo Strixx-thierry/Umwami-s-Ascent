@@ -24,20 +24,23 @@ public class BossController : MonoBehaviour
     [Header("Contact damage")]
     [Tooltip("Damage dealt to the player on contact (player max is 100).")]
     public float contactDamage = 34f;
-    public float damageInterval = 1f;
+    public float damageInterval = 1f;        // seconds between contact-damage ticks
     public string playerTag = "Player";
 
-    Rigidbody2D rb;
-    Animator anim;
-    Transform player;
-    float facingMagnitude;
-    bool chasing;
-    float nextDamageTime;
+    // ---- cached references / internal state ----
+    Rigidbody2D rb;            // moved by setting its velocity each physics step
+    Animator anim;            // optional; drives an "isWalking" bool if present
+    Transform player;         // the target we chase (set when the fight starts)
+    float facingMagnitude;    // remembered |scale.x| so flipping keeps the size
+    bool chasing;             // are we currently chasing? toggled by the zone
+    float nextDamageTime;     // Time.time at which we may deal contact damage again
 
     void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
+        // Store the sprite's size so that when we flip left/right we only change
+        // the SIGN of the X scale, never its magnitude.
         facingMagnitude = Mathf.Abs(transform.localScale.x);
         rb.freezeRotation = true;
     }
@@ -54,31 +57,35 @@ public class BossController : MonoBehaviour
     {
         chasing = false;
         player = null;
-        rb.linearVelocity = new Vector2(0f, rb.linearVelocity.y);
+        rb.linearVelocity = new Vector2(0f, rb.linearVelocity.y);  // halt horizontally
         SetWalking(false);
     }
 
+    // Movement runs in FixedUpdate because it touches the Rigidbody (physics).
     void FixedUpdate()
     {
+        // Not chasing (or no target yet): stand still.
         if (!chasing || player == null)
         {
             SetWalking(false);
             return;
         }
 
+        // Compare X positions to decide which way to move and whether we're
+        // close enough to stop.
         float dx = player.position.x - transform.position.x;
         float distance = Mathf.Abs(dx);
-        float dir = Mathf.Sign(dx);
+        float dir = Mathf.Sign(dx);          // -1 = player is left, +1 = player is right
 
         bool moving = distance > stopDistance;
         float vx = moving ? dir * moveSpeed : 0f;
-        rb.linearVelocity = new Vector2(vx, rb.linearVelocity.y);
+        rb.linearVelocity = new Vector2(vx, rb.linearVelocity.y);  // glide horizontally
 
-        if (dir != 0f) FacePlayer(dir);
+        if (dir != 0f) FacePlayer(dir);      // always look toward the player
         SetWalking(moving);
     }
 
-    // Flips the boss horizontally to look at the player.
+    // Flips the boss horizontally to look at the player by setting the scale sign.
     void FacePlayer(float dir)
     {
         float sign = spriteFacesRight ? dir : -dir;
@@ -86,6 +93,7 @@ public class BossController : MonoBehaviour
             sign * facingMagnitude, transform.localScale.y, transform.localScale.z);
     }
 
+    // Tell the Animator whether we're walking (only if such a parameter exists).
     void SetWalking(bool walking)
     {
         if (anim != null && HasParam("isWalking")) anim.SetBool("isWalking", walking);
@@ -97,14 +105,18 @@ public class BossController : MonoBehaviour
         return false;
     }
 
+    // ---- contact damage: hurt the player while we're touching them ----
+    // Works whether the boss collider is solid (OnCollisionStay2D) or a
+    // trigger (OnTriggerStay2D).
     void OnCollisionStay2D(Collision2D col) => TryDamage(col.collider);
     void OnTriggerStay2D(Collider2D other) => TryDamage(other);
 
     void TryDamage(Collider2D other)
     {
-        if (Time.time < nextDamageTime) return;
-        if (!other.CompareTag(playerTag)) return;
+        if (Time.time < nextDamageTime) return;        // respect the damage cooldown
+        if (!other.CompareTag(playerTag)) return;      // only the player gets hurt
 
+        // Find the PlayerHealth (on the object or a parent) and damage it.
         var hp = other.GetComponent<PlayerHealth>();
         if (hp == null) hp = other.GetComponentInParent<PlayerHealth>();
         if (hp != null)

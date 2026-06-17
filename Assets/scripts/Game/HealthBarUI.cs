@@ -9,12 +9,14 @@ using TMPro;
 /// </summary>
 public class HealthBarUI : MonoBehaviour
 {
-    public PlayerHealth player;
+    public PlayerHealth player;    // whose health we display
     public TMP_Text healthText;    // "Health: NN%"
     public Image fillImage;        // optional bar meter
 
     void Awake()
     {
+        // Auto-wire references so the HUD works even if nothing is dragged in
+        // the Inspector: find the player, the text, and the optional bar fill.
         if (player == null) player = FindAnyObjectByType<PlayerHealth>();
         if (healthText == null)
         {
@@ -28,6 +30,8 @@ public class HealthBarUI : MonoBehaviour
         }
     }
 
+    // Subscribe to the health event while this HUD is enabled, and draw the
+    // current value once so it isn't blank at the start.
     void OnEnable()
     {
         if (player == null) return;
@@ -35,12 +39,14 @@ public class HealthBarUI : MonoBehaviour
         UpdateHealth(player.CurrentHealth, player.maxHealth);
     }
 
+    // Always unsubscribe when disabled to avoid dangling event handlers.
     void OnDisable()
     {
         if (player == null) return;
         player.OnHealthChanged -= UpdateHealth;
     }
 
+    // Called by the event: convert health to a 0-100% and update the text/bar.
     void UpdateHealth(float current, float max)
     {
         float pct = max > 0f ? (current / max) * 100f : 0f;
