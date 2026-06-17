@@ -4,22 +4,23 @@ using TMPro;
 
 /// <summary>
 /// Drives the HUD from PlayerHealth: shows health as a percentage TextMesh
-/// (100% -> 0%) and the remaining chances. Still fills an optional bar Image if
-/// one is present. Auto-finds the player and HUD objects by name if not
-/// assigned (HealthText, HealthBarFill, ChancesText).
+/// (Health: NN%). Also fills an optional bar Image if one is assigned/present.
+/// Auto-finds the player and HealthText by name if not assigned in the Inspector.
 /// </summary>
 public class HealthBarUI : MonoBehaviour
 {
     public PlayerHealth player;
     public TMP_Text healthText;    // "Health: NN%"
-    public TMP_Text chancesText;   // "Chances: N"
     public Image fillImage;        // optional bar meter
 
     void Awake()
     {
-        if (player == null) player = FindFirstObjectByType<PlayerHealth>();
-        if (healthText == null)  healthText  = FindText("HealthText");
-        if (chancesText == null) chancesText = FindText("ChancesText");
+        if (player == null) player = FindAnyObjectByType<PlayerHealth>();
+        if (healthText == null)
+        {
+            var go = GameObject.Find("HealthText");
+            if (go != null) healthText = go.GetComponent<TMP_Text>();
+        }
         if (fillImage == null)
         {
             var go = GameObject.Find("HealthBarFill");
@@ -27,26 +28,17 @@ public class HealthBarUI : MonoBehaviour
         }
     }
 
-    static TMP_Text FindText(string name)
-    {
-        var go = GameObject.Find(name);
-        return go != null ? go.GetComponent<TMP_Text>() : null;
-    }
-
     void OnEnable()
     {
         if (player == null) return;
         player.OnHealthChanged += UpdateHealth;
-        player.OnChancesChanged += UpdateChances;
         UpdateHealth(player.CurrentHealth, player.maxHealth);
-        UpdateChances(player.CurrentChances);
     }
 
     void OnDisable()
     {
         if (player == null) return;
         player.OnHealthChanged -= UpdateHealth;
-        player.OnChancesChanged -= UpdateChances;
     }
 
     void UpdateHealth(float current, float max)
@@ -56,11 +48,5 @@ public class HealthBarUI : MonoBehaviour
             healthText.text = "Health: " + Mathf.CeilToInt(Mathf.Clamp(pct, 0f, 100f)) + "%";
         if (fillImage != null)
             fillImage.fillAmount = max > 0f ? current / max : 0f;
-    }
-
-    void UpdateChances(int remaining)
-    {
-        if (chancesText != null)
-            chancesText.text = "Chances: " + remaining;
     }
 }

@@ -20,10 +20,12 @@ public class PlayerAttack : MonoBehaviour
     public Color slashColor = new Color(1f, 0.9f, 0.5f, 1f);
 
     LineRenderer line;
+    Animator anim;
     float nextAttackTime;
 
     void Awake()
     {
+        anim = GetComponent<Animator>();
         line = GetComponent<LineRenderer>();
         line.useWorldSpace = true;
         line.positionCount = 2;
@@ -52,6 +54,8 @@ public class PlayerAttack : MonoBehaviour
     {
         if (Time.time < nextAttackTime) return;
         nextAttackTime = Time.time + cooldown;
+
+        if (anim != null) anim.SetTrigger("Slash");
 
         float dir = Mathf.Sign(transform.localScale.x);
         if (dir == 0) dir = 1f;

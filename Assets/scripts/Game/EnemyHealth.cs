@@ -48,10 +48,12 @@ public class EnemyHealth : MonoBehaviour
 
         if (isBoss)
         {
-            Debug.Log("Shaman defeated -> Win");
+            // Defeating the boss does NOT win immediately - it unlocks the
+            // Win Zone (the throne). The player must then reach it.
+            Debug.Log("Shaman defeated -> throne unlocked");
             if (MusicManager.Instance != null) MusicManager.Instance.ExitBossFight();
-            if (GameManager.Instance != null) GameManager.Instance.Win();
-            else GameFlow.LoadWin();
+            if (GameManager.Instance != null) GameManager.Instance.MarkBossDefeated();
+            Destroy(gameObject);
         }
         else
         {
