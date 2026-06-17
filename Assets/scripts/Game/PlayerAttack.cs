@@ -55,7 +55,7 @@ public class PlayerAttack : MonoBehaviour
         if (Time.time < nextAttackTime) return;
         nextAttackTime = Time.time + cooldown;
 
-        if (anim != null) anim.SetTrigger("Slash");
+        if (HasParam("Slash")) anim.SetTrigger("Slash");
 
         float dir = Mathf.Sign(transform.localScale.x);
         if (dir == 0) dir = 1f;
@@ -88,6 +88,13 @@ public class PlayerAttack : MonoBehaviour
         }
 
         StartCoroutine(ShowSlash(origin, end));
+    }
+
+    bool HasParam(string n)
+    {
+        if (anim == null) return false;
+        foreach (var p in anim.parameters) if (p.name == n) return true;
+        return false;
     }
 
     IEnumerator ShowSlash(Vector2 a, Vector2 b)

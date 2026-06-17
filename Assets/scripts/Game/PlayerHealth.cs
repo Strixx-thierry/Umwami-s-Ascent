@@ -89,8 +89,15 @@ public class PlayerHealth : MonoBehaviour
     {
         dead = true;
         Debug.Log("Player died -> loading Lose scene");
-        if (anim != null) anim.SetTrigger("Death");
+        if (HasParam("Death")) anim.SetTrigger("Death");
         StartCoroutine(LoadLoseAfterDeath());
+    }
+
+    bool HasParam(string n)
+    {
+        if (anim == null) return false;
+        foreach (var p in anim.parameters) if (p.name == n) return true;
+        return false;
     }
 
     System.Collections.IEnumerator LoadLoseAfterDeath()
