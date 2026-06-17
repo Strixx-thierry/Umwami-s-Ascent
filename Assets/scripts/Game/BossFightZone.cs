@@ -13,6 +13,8 @@ public class BossFightZone : MonoBehaviour
     public string playerTag = "Player";
     [Tooltip("If true, leaving the zone also ends the bossfight music.")]
     public bool endOnExit = false;
+    [Tooltip("The boss to wake up. Leave empty to auto-find the one in the scene.")]
+    public BossController boss;
 
     void Reset()
     {
@@ -22,14 +24,22 @@ public class BossFightZone : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.CompareTag(playerTag) && MusicManager.Instance != null)
-            MusicManager.Instance.EnterBossFight();
+        if (!other.CompareTag(playerTag)) return;
+
+        if (MusicManager.Instance != null) MusicManager.Instance.EnterBossFight();
+
+        if (boss == null) boss = FindAnyObjectByType<BossController>();
+        if (boss != null) boss.BeginChase(other.transform);
     }
 
     void OnTriggerExit2D(Collider2D other)
     {
-        if (endOnExit && other.CompareTag(playerTag) && MusicManager.Instance != null)
+        if (!other.CompareTag(playerTag)) return;
+
+        if (endOnExit && MusicManager.Instance != null)
             MusicManager.Instance.ExitBossFight();
+
+        if (boss != null) boss.StopChase();
     }
 
     /// <summary>Call this when the boss is defeated.</summary>

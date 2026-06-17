@@ -36,8 +36,9 @@ public class EnemyHealth : MonoBehaviour
     System.Collections.IEnumerator Flash()
     {
         Color c = sr.color;
-        sr.color = Color.white;
-        yield return new WaitForSeconds(0.08f);
+        // Glow red to signal a hit landed.
+        sr.color = new Color(1f, 0.25f, 0.25f, c.a);
+        yield return new WaitForSeconds(0.1f);
         sr.color = c;
     }
 
